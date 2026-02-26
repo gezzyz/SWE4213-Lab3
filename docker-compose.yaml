@@ -1,0 +1,68 @@
+services:
+  doctor-service:
+    build: ./doctor-service
+    ports:
+      - "5002:3000"
+    environment:
+      - DB_HOST=doctor-db
+      - DB_PORT=5432
+      - DB_NAME=doctor_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - doctor-db
+    networks:
+      - clinic-net
+
+  appointment-service:
+    build: ./appointment-service
+    ports:
+      - "5001:3000"
+    environment:
+      - DOCTOR_SERVICE_PORT=3000
+      - DOCTOR_SERVICE_URL=http://doctor-service:3000
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      - doctor-service
+      - rabbitmq
+    networks:
+      - clinic-net
+
+  notification-service:
+    build: ./notification-service
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    networks:
+      - clinic-net
+
+  records-service:
+    build: ./records-service
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    networks:
+      - clinic-net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - clinic-net
+
+  doctor-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=doctor_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - clinic-net
+
+networks:
+  clinic-net:
+    driver: bridge

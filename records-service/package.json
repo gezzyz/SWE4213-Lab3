@@ -1,0 +1,12 @@
+{
+    "name": "records-service",
+    "version": "1.0.0",
+    "description": "Records service for clinic management system",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "amqplib": "^0.10.3"
+    }
+}

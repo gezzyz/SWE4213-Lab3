@@ -18,15 +18,25 @@ const initDB = async () => {
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS doctors (
-        id SERIAL PRIMARY KEY,
+        id VARCHAR(255) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         specialty VARCHAR(255) NOT NULL,
-        available_slots INTEGER NOT NULL,
+        available_slots INTEGER NOT NULL
       );`);
     console.log('Database initialized');
+
+    await pool.query(`
+      INSERT INTO doctors (id, name, specialty, available_slots)
+      VALUES
+        ('D001', 'Dr. Alice Smith', 'Cardiology', 5),
+        ('D002', 'Dr. Bob Johnson', 'Dermatology', 3),
+        ('D003', 'Dr. Carol Williams', 'Neurology', 4)
+      ON CONFLICT (id) DO NOTHING;`);
+    console.log('Sample doctors inserted');
   } catch (err) {
-    console.error('Error initializing database:', err);
-    process.exit(1);
+    console.error('Error initializing database:', err.message);
+    console.log('Retrying in 5 seconds...');
+    setTimeout(initDB, 5000);
   }
 };
 
@@ -95,4 +105,4 @@ initDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Doctor service running on port ${PORT}`);
   });
-})
+});
